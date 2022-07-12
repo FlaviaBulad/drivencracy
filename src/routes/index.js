@@ -1,11 +1,11 @@
 import { Router } from "express";
 
-import choiceRouter from "./choiceRouter.js";
 import pollRouter from "./pollRouter.js";
+import choiceRouter from "./choiceRouter.js";
 
 const router = Router();
 
-router.use(choiceRouter);
 router.use(pollRouter);
+router.use(choiceRouter);
 
 export default router;

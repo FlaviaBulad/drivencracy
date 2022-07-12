@@ -1,7 +1,7 @@
 {
   "name": "drivencracy",
   "version": "1.0.0",
-  "description": "",
+  "description": "an API where we can create and vote in polls.",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -14,6 +14,7 @@
   "dependencies": {
     "chalk": "^5.0.1",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.3",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "mongodb": "^4.7.0",
@@ -22,5 +23,9 @@
   },
   "devDependencies": {
     "prettier": "2.7.1"
+  },
+  "nodemonConfig": {
+    "ext": "js,coffee,json,env",
+    "watch": ".env"
   }
 }
