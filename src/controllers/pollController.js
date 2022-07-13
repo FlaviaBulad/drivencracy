@@ -20,3 +20,16 @@ export async function createPoll(req, res) {
     res.status(500).send("Falha ao tentar criar a enquete: ", error);
   }
 }
+
+export async function getPoll(_, res) {
+  const polls = await db.collection("polls").find({}).toArray();
+
+  try {
+    if (polls.length === 0) {
+      return res.status(204).send("Nenhuma enquete cadastrada");
+    }
+    return res.status(200).send(polls);
+  } catch (error) {
+    return res.status(500).send("Falha ao tentar pegar as enquetes");
+  }
+}
