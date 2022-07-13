@@ -31,10 +31,8 @@ export async function createChoice(req, res) {
 
     await db.collection("choices").insertOne(choice);
 
-    return res.status(201).send("Escolha adicionada à enquete");
+    return res.status(201).send("Opção adicionada à enquete");
   } catch (error) {
-    res
-      .status(500)
-      .send("Não foi possível adicionar a escolha à enquete", error);
+    res.status(500).send("Não foi possível adicionar a opção à enquete", error);
   }
 }
