@@ -30,6 +30,6 @@ export async function getPoll(_, res) {
     }
     return res.status(200).send(polls);
   } catch (error) {
-    return res.status(500).send("Falha ao tentar pegar as enquetes");
+    return res.status(500).send("Falha ao tentar pegar as enquetes", error);
   }
 }
