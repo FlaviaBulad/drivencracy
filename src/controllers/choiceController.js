@@ -1,38 +1,68 @@
-import { db } from "../database/mongodb.js";
+import db from "../database/mongodb.js";
+import { ObjectId } from "mongodb";
 
 export async function createChoice(req, res) {
-  const choice = {
-    title: req.body.title,
-    pollId: req.body.pollId,
-  };
+  const { title, pollId } = req.body;
 
   try {
-    const getPollId = ObjectId(pollId);
-    const pollExist = await db.collection("polls").findOne({ _id: getPollId });
+    const pollExist = await db
+      .collection("polls")
+      .findOne({ _id: new ObjectId(pollId) });
 
     if (!pollExist) {
       return res.status(404).send("A enquete não existe.");
     }
 
-    const pollExpiration = pollExist.expireAt;
-    const presentDay = dayjs().format("YYYY-MM-D hh:mm");
+    const choiceExists = await db
+      .collection("choices")
+      .findOne({ title: title });
 
-    if (presentDay > pollExpiration) {
+    if (choiceExists) {
+      return res.status(409).send("Opção já existe");
+    }
+
+    await db
+      .collection("choices")
+      .insertOne({ title, pollId: new ObjectId(pollId) });
+
+    return res.status(201).send(choice);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+}
+
+export async function addVote(req, res) {
+  const id = req.params.id;
+
+  const vote = {
+    createdAt: dayjs().format("YYYY-MM-DD HH:mm"),
+    choiceId: id,
+  };
+
+  try {
+    const findChoice = await db
+      .collection("choices")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (!findChoice) {
+      return res.status(404).send("Opção não existe");
+    }
+
+    const findPoll = await db
+      .collection("polls")
+      .findOne({ _id: new ObjectId(isChoice.poolId) });
+
+    const pollExpiration = findPoll.expiredAt;
+    const presentTime = dayjs().format("YYYY-MM-D hh:mm");
+
+    if (presentTime > pollExpiration) {
       return res.status(403).send("A enqueta já expirou");
     }
 
-    const choiceExists = await db
-      .collection("choices")
-      .findOne({ title: choice.title });
+    await db.collection("votes").insertOne(vote);
 
-    if (choiceExists) {
-      return res.status(409).send("Título já existente");
-    }
-
-    await db.collection("choices").insertOne(choice);
-
-    return res.status(201).send("Opção adicionada à enquete");
+    res.sendStatus(201);
   } catch (error) {
-    res.status(500).send("Não foi possível adicionar a opção à enquete", error);
+    res.sendStatus(500);
   }
 }
