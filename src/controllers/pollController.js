@@ -33,3 +33,21 @@ export async function getPoll(_, res) {
     return res.status(500).send("Falha ao tentar pegar as enquetes", error);
   }
 }
+
+export async function getPollChoices(req, res) {
+  const id = req.params.id;
+
+  try {
+    const pollChoices = await db
+      .collection("choices")
+      .find({ poolId: id })
+      .toArray();
+    if (pollChoices.length === 0) {
+      return res.status(404).send("Enquete não existe");
+    }
+
+    return res.status(200).send(pollChoices);
+  } catch (error) {
+    return res.status(500).send("Falha ao tentar pegar as opções", error);
+  }
+}
