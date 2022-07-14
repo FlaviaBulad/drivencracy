@@ -4,7 +4,6 @@ import dayjs from "dayjs";
 
 export async function createChoice(req, res) {
   const { title, pollId } = req.body;
-
   const choice = req.body;
 
   const getPollId = ObjectId(pollId);
@@ -32,6 +31,7 @@ export async function createChoice(req, res) {
     if (choiceExists) {
       return res.status(409).send("Opção já existe");
     }
+    await db.collection("choices");
     await db.collection("choices").insertOne({ ...choice, votes: 0 });
 
     return res.status(201).send(choice);
@@ -56,9 +56,12 @@ export async function addVote(req, res) {
       .collection("polls")
       .findOne({ _id: new ObjectId(findChoice.pollId) });
 
-    const pollExpiration = findPoll.expiredAt;
-    const isExpired = dayjs().isAfter(pollExpiration, "days");
-    if (isExpired) {
+    const pollExpiration = findPoll.expireAt;
+    console.log("expiração", pollExpiration);
+
+    const now = dayjs().format("YYYY-MM-DD HH:mm");
+
+    if (now > pollExpiration) {
       return res.status(403).send("Enquete já expirou");
     }
 

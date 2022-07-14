@@ -8,7 +8,7 @@ export async function createPoll(req, res) {
     const { title, expireAt } = req.body;
     const poll = req.body;
 
-    if (expireAt === "") {
+    if (expireAt === "" || !expireAt) {
       let addExpireAt = dayjs().add(30, "day").format("YYYY-MM-D hh:mm");
       const pollComplete = { title, expireAt: addExpireAt };
 
@@ -57,22 +57,16 @@ export async function getPollResult(req, res) {
   const pollId = req.params.id;
 
   try {
-    const pollExist = await db.collection("polls").findOne({ _id: pollId });
-
-    if (!pollExist) {
-      return res.status(404).send("Enquete não existe.");
-    }
-
     const pollChoices = await db
       .collection("choices")
-      .find({ pollId: pollId })
+      .find({ pollId: ObjectId(pollId) })
       .toArray();
 
     let mostVoted = 0;
     let mostVotedTitle = "";
 
     for (let i = 0; i < pollChoices.length; i++) {
-      let votes = choices[i].votes;
+      let votes = pollChoices[i].votes;
 
       if (votes > mostVoted) {
         votes = mostVoted;
