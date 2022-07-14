@@ -52,7 +52,7 @@ export async function addVote(req, res) {
 
     const findPoll = await db
       .collection("polls")
-      .findOne({ _id: new ObjectId(id.pollId) });
+      .findOne({ _id: new ObjectId(findChoice.pollId) });
 
     const pollExpiration = findPoll.expiredAt;
     const isExpired = dayjs().isAfter(pollExpiration, "days");
