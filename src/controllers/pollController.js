@@ -57,20 +57,20 @@ export async function getPollResult(req, res) {
   const pollId = req.params.id;
 
   try {
-    const pollChoices = await db
+    const choices = await db
       .collection("choices")
-      .find({ pollId: ObjectId(pollId) })
+      .find({ pollId: pollId })
       .toArray();
 
     let mostVoted = 0;
     let mostVotedTitle = "";
 
-    for (let i = 0; i < pollChoices.length; i++) {
-      let votes = pollChoices[i].votes;
+    for (let i = 0; i < choices.length; i++) {
+      let votes = choices[i].votes;
 
       if (votes > mostVoted) {
-        votes = mostVoted;
-        mostVotedTitle = pollChoices[i].title;
+        mostVoted = votes;
+        mostVotedTitle = choices[i].title;
       }
     }
 
