@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 
 export async function createChoice(req, res) {
   const { title, pollId } = req.body;
+  const choice = req.body;
 
   try {
     const pollExist = await db
@@ -11,6 +12,12 @@ export async function createChoice(req, res) {
 
     if (!pollExist) {
       return res.status(404).send("A enquete não existe.");
+    }
+
+    const pollExpiration = pollExist.expiredAt;
+    const isExpired = dayjs().isAfter(pollExpiration, "days");
+    if (isExpired) {
+      return res.status(403).send("Enquete já expirou");
     }
 
     const choiceExists = await db
@@ -23,7 +30,7 @@ export async function createChoice(req, res) {
 
     await db
       .collection("choices")
-      .insertOne({ title, pollId: new ObjectId(pollId) });
+      .insertOne({ title, pollId: new ObjectId(pollId), votes: 0 });
 
     return res.status(201).send(choice);
   } catch (error) {
@@ -33,11 +40,6 @@ export async function createChoice(req, res) {
 
 export async function addVote(req, res) {
   const id = req.params.id;
-
-  const vote = {
-    createdAt: dayjs().format("YYYY-MM-DD HH:mm"),
-    choiceId: id,
-  };
 
   try {
     const findChoice = await db
@@ -50,18 +52,19 @@ export async function addVote(req, res) {
 
     const findPoll = await db
       .collection("polls")
-      .findOne({ _id: new ObjectId(isChoice.poolId) });
+      .findOne({ _id: new ObjectId(id.pollId) });
 
     const pollExpiration = findPoll.expiredAt;
-    const presentTime = dayjs().format("YYYY-MM-D hh:mm");
-
-    if (presentTime > pollExpiration) {
-      return res.status(403).send("A enqueta já expirou");
+    const isExpired = dayjs().isAfter(pollExpiration, "days");
+    if (isExpired) {
+      return res.status(403).send("Enquete já expirou");
     }
 
-    await db.collection("votes").insertOne(vote);
+    await db
+      .collection("choices")
+      .findOneAndUpdate({ _id: ObjectId(id) }, { $inc: { votes: 1 } });
 
-    res.sendStatus(201);
+    res.status(201).send("Votou!");
   } catch (error) {
     res.sendStatus(500);
   }
