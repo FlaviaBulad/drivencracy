@@ -1,22 +1,27 @@
 import db from "../database/mongodb.js";
 import { ObjectId } from "mongodb";
+import dayjs from "dayjs";
 
 export async function createChoice(req, res) {
   const { title, pollId } = req.body;
+
   const choice = req.body;
 
+  const getPollId = ObjectId(pollId);
+
   try {
-    const pollExist = await db
-      .collection("polls")
-      .findOne({ _id: new ObjectId(pollId) });
+    const pollExist = await db.collection("polls").findOne({ _id: getPollId });
 
     if (!pollExist) {
       return res.status(404).send("A enquete não existe.");
     }
 
-    const pollExpiration = pollExist.expiredAt;
-    const isExpired = dayjs().isAfter(pollExpiration, "days");
-    if (isExpired) {
+    const pollExpiration = pollExist.expireAt;
+    console.log("expiração", pollExpiration);
+
+    const now = dayjs().format("YYYY-MM-DD HH:mm");
+
+    if (now > pollExpiration) {
       return res.status(403).send("Enquete já expirou");
     }
 
@@ -27,14 +32,11 @@ export async function createChoice(req, res) {
     if (choiceExists) {
       return res.status(409).send("Opção já existe");
     }
-
-    await db
-      .collection("choices")
-      .insertOne({ title, pollId: new ObjectId(pollId), votes: 0 });
+    await db.collection("choices").insertOne({ ...choice, votes: 0 });
 
     return res.status(201).send(choice);
   } catch (error) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 }
 
