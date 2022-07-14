@@ -93,6 +93,6 @@ export async function getPollResult(req, res) {
 
     return res.status(201).send(results);
   } catch (error) {
-    return res.status(500).send("Falha ao tentar pegar as opções", error);
+    return res.status(500).send("Falha ao tentar pegar o resultado", error);
   }
 }
